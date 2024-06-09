@@ -690,6 +690,13 @@ do
                 LocalPlayer.CameraMaxZoomDistance = 8
             end
         end)
+
+other.element("Toggle", "wallbang", nil, function(State)
+            if (State.Toggle) then
+                game:service[[Workspace]]:FindFirstChild('Map'):FindFirstChild('Parts'):FindFirstChild('M_Parts').Parent = game:service[[Workspace]]:FindFirstChild('Characters')
+
+            end
+        end)
         other.element("Toggle", "no jump cooldown")
 
         
