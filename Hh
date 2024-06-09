@@ -12,8 +12,132 @@ local Mouse       = LocalPlayer:GetMouse()
 local Camera      = workspace.CurrentCamera
 
 
-for k,v in pairs(getgc(true)) do if pcall(function() return rawget(v,"indexInstance") end) and type(rawget(v,"indexInstance")) == "table" and (rawget(v,"indexInstance"))[1] == "kick" then v.tvk = {"kick",function() return game.Workspace:WaitForChild("") end} end end
 
+
+
+
+
+local rcFunction
+        for iter = 1, 10 do
+            for i, v in next, getgc(true) do
+                if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
+                    rcFunction = v.lol
+                    break
+                end
+            end
+            if rcFunction then
+                break
+            end
+            wait(0.1)
+        end
+
+        local grcFunction
+        for iter = 1, 10 do
+            for i, v in next, getgc(true) do
+                if (type(v) == "table" and type(rawget(v, "ONRH_S4")) == "function") then
+                    grcFunction = v.ONRH_S4
+                    break
+                end
+            end
+            if grcFunction then
+                break
+            end
+            wait(0.1)
+        end
+
+        local numberT = 20
+
+        if (rcFunction) then
+            for i, v in next, getconstants(rcFunction) do
+                if (v == 1.75 or v == 10) then
+                    setconstant(rcFunction, i, numberT)
+                end
+            end
+        else
+            warn(
+                "Failed to get a crucial function for the melee HBE unpatcher, therefore it won't work, please contact the retard that made this script"
+            )
+        end
+
+        if (grcFunction) then
+            for i, v in next, getconstants(grcFunction) do
+                if (v == 1.5 or v == 10) then
+                    setconstant(grcFunction, i, numberT)
+                end
+            end
+        else
+            warn(
+                "Failed to get a crucial function for the gun HBE unpatcher, therefore it won't work, please contact the retard that made this script"
+            )
+        end
+
+        local DefHeadSize = game.Players.LocalPlayer.Character:WaitForChild("Head").Size
+
+        local Lighting = game.Lighting
+        local DefaultAmbient = Lighting.Ambient
+
+        local oldIndex
+        oldIndex =
+            hookmetamethod(
+            game,
+            "__index",
+            newcclosure(
+                function(...) -- future proofing
+                    local tab, key = ...
+                    if (tab == nil or type(tab) ~= "userdata" or key == nil) then --incase we want to change the args in the future
+                        return oldIndex(...)
+                    end
+                    if (not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size") then
+                        if (oldIndex(tab, "Name") == "Head") then
+                            return DefHeadSize
+                        end
+                    end
+                    return oldIndex(...)
+                end
+            )
+        )
+
+        local oldNewIndex
+        oldNewIndex =
+            hookmetamethod(
+            game,
+            "__newindex",
+            newcclosure(
+                function(...)
+                    if (not checkcaller()) then
+                        local tab, key, value = ...
+                        if (tab == Lighting and key == "Ambient") then
+                            return oldNewIndex(tab, key, FullBright and _G.FullBrightColor or DefaultAmbient) -- because i remember the retard having that shit be put inside of a frame hook
+                        end
+                    end
+                    return oldNewIndex(...)
+                end
+            )
+        )
+
+        local fMain
+        local fMainDo
+        for i, v in next, getgc() do
+            if (type(v) == "function" and getinfo(v).source:find(".PlayerScripts.")) then
+                if (getinfo(v).name == "Main") then
+                    fMain = v
+                elseif
+                    (getinfo(v).name == "MainDo" and
+                        ({
+                            pcall(
+                                function()
+                                    getproto(v, 3)
+                                end
+                            )
+                        })[1])
+                 then -- for extra certainty, there is nothing like this for the other function because i cba and i spent alot of time reversing this function
+                    fMainDo = v
+                end
+                if (fMain and fMainDo) then
+                    break
+                end
+            end
+        end
 
 
 
