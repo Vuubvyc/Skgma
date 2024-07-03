@@ -723,7 +723,7 @@ other.element("Toggle", "wallbang", nil, function(State)
 						game.Players.LocalPlayer.Character["Pepper-spray"].RemoteEvent:FireServer("Update", 99)
 					end
 				end
-			end
+			end)
 
         
 
