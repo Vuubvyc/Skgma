@@ -683,6 +683,7 @@ do
         local other = misc.new_sector("other", "Left")
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
+                other.element("Toggle", "InfinitePepperSpray")
         other.element("Toggle", "extended zoom", nil, function(State)
             if (State.Toggle) then
                 LocalPlayer.CameraMaxZoomDistance = 50
@@ -716,6 +717,13 @@ other.element("Toggle", "wallbang", nil, function(State)
                 end
             end
         end)
+         Player.Character:FindFirstChild("Pepper-spray") then
+					menu.values[4].misc["other"]["InfinitePepperSpray].Toggle then
+						game.Players.LocalPlayer.Character["Pepper-spray"].Ammo.Value = 99
+						game.Players.LocalPlayer.Character["Pepper-spray"].RemoteEvent:FireServer("Update", 99)
+					end
+				end
+			end
 
         
 
