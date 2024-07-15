@@ -683,6 +683,38 @@ do
         local other = misc.new_sector("other", "Left")
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
+        other.element("Toggle", "Spin", nil, function(State)library:AddConnection(runService.RenderStepped, "Spin", function()
+						if menu and menu.values[4].misc["other"]["Spin"].Toggle then
+							local Char = Players[Client].Character
+							Char = Char and FFCoC(Char, "Humanoid")
+							if Char and Char.Parent.HumanoidRootPart then
+								if not Char.Parent.HumanoidRootPart:FindFirstChild("Spinning") then
+									for i, v in pairs(Char.Parent.HumanoidRootPart:GetChildren()) do
+										if v.Name == "Spinning" then
+											v.Parent = nil
+										end
+									end
+									local Spin = Instance.new("BodyAngularVelocity")
+									Spin.Name = "Spinning"
+									Spin.Parent = Char.Parent.HumanoidRootPart
+									Spin.MaxTorque = Vector3.new(0, math.huge, 0)
+								end
+								Char.Parent.HumanoidRootPart.Spinning.AngularVelocity = Vector3.new(0, library.flags[GameTitle .. " Spin Amount"], 0)
+							end
+						end
+					end)
+				else
+					menu.connections["Spin"]:Disconnect()
+					local Char = Players[Client].Character
+					Char = Char and FFCoC(Char, "Humanoid")
+					if Char then
+						for i, v in pairs(Char.Parent.HumanoidRootPart:GetChildren()) do
+							if v.Name == "Spinning" then
+								v.Parent = nil
+							end
+						end
+					end
+				end
         other.element("Toggle", "extended zoom", nil, function(State)
             if (State.Toggle) then
                 LocalPlayer.CameraMaxZoomDistance = 50
