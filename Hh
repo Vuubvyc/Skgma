@@ -684,7 +684,26 @@ do
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
         other.element("Toggle", "Spin", nil, function(State)library:AddConnection(runService.RenderStepped, "Spin", function()
-						if menu and menu.values[4].misc["other"]["Spin"].Toggle then
+				
+				
+		
+        other.element("Toggle", "extended zoom", nil, function(State)
+            if (State.Toggle) then
+                LocalPlayer.CameraMaxZoomDistance = 50
+            else
+                LocalPlayer.CameraMaxZoomDistance = 8
+            end
+        end)
+
+other.element("Toggle", "wallbang", nil, function(State)
+            if (State.Toggle) then
+                game:service[[Workspace]]:FindFirstChild('Map'):FindFirstChild('Parts'):FindFirstChild('M_Parts').Parent = game:service[[Workspace]]:FindFirstChild('Characters')
+
+            end
+        end)
+        other.element("Toggle", "no jump cooldown")
+
+		if menu and menu.values[4].misc["other"]["Spin"].Toggle then
 							local Char = Players[Client].Character
 							Char = Char and FFCoC(Char, "Humanoid")
 							if Char and Char.Parent.HumanoidRootPart then
@@ -712,25 +731,6 @@ do
 							if v.Name == "Spinning" then
 								v.Parent = nil
 							end
-						end
-					end
-				end
-        other.element("Toggle", "extended zoom", nil, function(State)
-            if (State.Toggle) then
-                LocalPlayer.CameraMaxZoomDistance = 50
-            else
-                LocalPlayer.CameraMaxZoomDistance = 8
-            end
-        end)
-
-other.element("Toggle", "wallbang", nil, function(State)
-            if (State.Toggle) then
-                game:service[[Workspace]]:FindFirstChild('Map'):FindFirstChild('Parts'):FindFirstChild('M_Parts').Parent = game:service[[Workspace]]:FindFirstChild('Characters')
-
-            end
-        end)
-        other.element("Toggle", "no jump cooldown")
-
         
 
         PlayerGui.ChildAdded:Connect(function(Child)
