@@ -683,7 +683,7 @@ do
         local other = misc.new_sector("other", "Left")
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
-        other.element("Toggle", "Spin", nil, function(State)library:AddConnection(runService.RenderStepped, "Spin", function()
+        other.element("Spin")
 				
 				
 		
