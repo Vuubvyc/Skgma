@@ -703,7 +703,7 @@ other.element("Toggle", "wallbang", nil, function(State)
         end)
         other.element("Toggle", "no jump cooldown")
 
-		if menu and menu.values[4].misc["other"]["Spin"].Toggle then
+		if menu.values[4].misc["other"]["Spin"].Toggle then
 							local Char = Players[Client].Character
 							Char = Char and FFCoC(Char, "Humanoid")
 							if Char and Char.Parent.HumanoidRootPart then
@@ -723,7 +723,7 @@ other.element("Toggle", "wallbang", nil, function(State)
 						end
 					end)
 				else
-					menu.connections["Spin"]:Disconnect()
+					menu.values[4].misc["other"]["Spin"]:Disconnect()
 					local Char = Players[Client].Character
 					Char = Char and FFCoC(Char, "Humanoid")
 					if Char then
