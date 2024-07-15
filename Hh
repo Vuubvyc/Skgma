@@ -683,7 +683,7 @@ do
         local other = misc.new_sector("other", "Left")
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
-        other.element("Spin")
+        other.element("Toggle", "Spin")
 				
 				
 		
@@ -718,12 +718,12 @@ other.element("Toggle", "wallbang", nil, function(State)
 									Spin.Parent = Char.Parent.HumanoidRootPart
 									Spin.MaxTorque = Vector3.new(0, math.huge, 0)
 								end
-								Char.Parent.HumanoidRootPart.Spinning.AngularVelocity = Vector3.new(0, library.flags[GameTitle .. " Spin Amount"], 0)
+								Char.Parent.HumanoidRootPart.Spinning.AngularVelocity = Vector3.new
 							end
 						end
 					end)
 				else
-					menu.values[4].misc["other"]["Spin"]:Disconnect()
+					if menu.values[4].misc["other"]["Spin"]:Disconnect()
 					local Char = Players[Client].Character
 					Char = Char and FFCoC(Char, "Humanoid")
 					if Char then
@@ -795,7 +795,7 @@ other.element("Toggle", "wallbang", nil, function(State)
 
         local NoclipLoop = RunService.Stepped:Connect(function()
             if not LocalPlayer.Character then return end
-            if not menu.values[4].misc.character.noclip.Toggle or not menu.values[4].misc.character["$noclip"].Active then return end
+            if not menu.values[4].misc.character.noclip.Toggle or not misc.character["$noclip"].Active then return end
 
             for _,part in pairs (LocalPlayer.Character:GetDescendants()) do
                 if part:IsA("BasePart") and part.CanCollide == true then
