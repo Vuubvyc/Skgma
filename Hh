@@ -675,6 +675,11 @@ do
         hbe.element("Toggle", "enabled"):add_keybind()
         hbe.element("Slider", "multiplier", {default = {min = 100, max = 400, default = 400}})
 
+        local killaura = misc.new_sector("kill aura", "Right")
+        killaura.element("Toggle", "enabled"):add_keybind()
+        killaura.element("Slider", "distance", {default = {min = 10, max = 15, default = 15}})
+        
+
         local viewoffset = misc.new_sector("viewmodel offset", "Right")
         viewoffset.element("Toggle", "enabled")
         viewoffset.element("Slider", "x offset", {default = {min = -10, max = 10, default = 0}})
@@ -699,6 +704,8 @@ other.element("Toggle", "wallbang", nil, function(State)
             end
         end)
         other.element("Toggle", "no jump cooldown")
+        
+        other.element("Toggle", "Spinbot")
         
         other.element("Toggle", "Allowance Autofarm")
         
@@ -1234,6 +1241,20 @@ end)
     
     if menu.values[4].misc["other"]["no jump cooldown"].Toggle then
         SelfHumanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+    end
+    
+    if menu.values[4].misc["other"]["Spinbot"].Toggle then local speed = 50
+
+local plr = game:GetService("Players").LocalPlayer
+repeat task.wait() until plr.Character
+local humRoot = plr.Character:WaitForChild("HumanoidRootPart")
+plr.Character:WaitForChild("Humanoid").AutoRotate = false
+local velocity = Instance.new("AngularVelocity")
+velocity.Attachment0 = humRoot:WaitForChild("RootAttachment")
+velocity.MaxTorque = math.huge
+velocity.AngularVelocity = Vector3.new(0, speed, 0)
+velocity.Parent = humRoot
+velocity.Name = "Spinbot"
     end
 
     local Stats = GetCharStats()
