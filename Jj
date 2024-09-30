@@ -1,0 +1,39 @@
+local plrs = game:GetService("Players")
+local me = plrs.LocalPlayer
+local work = true
+
+local function modifyHead(character)
+    local head = character:FindFirstChild("Head")
+    if head and work and head.Size ~= Vector3.new(5, 5, 5) then
+        head.Size = Vector3.new(6, 6, 6)
+        head.Transparency = 0.5
+        head.CanCollide = false
+        head.Massless = true
+    end
+end
+
+local function onDescendantAdded(descendant)
+    if descendant:IsA("BasePart") and descendant.Name == "Head" then
+        modifyHead(descendant.Parent)
+    end
+end
+
+local function onCharacterAdded(character)
+    character.DescendantAdded:Connect(onDescendantAdded)
+    modifyHead(character)
+end
+
+for _, player in pairs(plrs:GetPlayers()) do
+    if player ~= me then
+        if player.Character then
+            onCharacterAdded(player.Character)
+        end
+        player.CharacterAdded:Connect(onCharacterAdded)
+    end
+end
+
+plrs.PlayerAdded:Connect(function(plradded)
+    if plradded ~= me then
+        plradded.CharacterAdded:Connect(onCharacterAdded)
+    end
+end)
