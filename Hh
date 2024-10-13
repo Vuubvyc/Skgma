@@ -71,105 +71,11 @@ end))
 -- setthreadidentity(9)
 setthreadidentity(7)
 
+    
 
 
-local rcFunction
-        for iter = 1, 10 do
-            for i, v in next, getgc(true) do
-                if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
-                    rcFunction = v.lol
-                    break
-                end
-            end
-            if rcFunction then
-                break
-            end
-            wait(0.1)
-        end
 
-        local grcFunction
-        for iter = 1, 10 do
-            for i, v in next, getgc(true) do
-                if (type(v) == "table" and type(rawget(v, "ONRH_S4")) == "function") then
-                    grcFunction = v.ONRH_S4
-                    break
-                end
-            end
-            if grcFunction then
-                break
-            end
-            wait(0.1)
-        end
 
-        local numberT = 20
-
-        if (rcFunction) then
-            for i, v in next, getconstants(rcFunction) do
-                if (v == 1.75 or v == 10) then
-                    setconstant(rcFunction, i, numberT)
-                end
-            end
-        else
-            warn(
-                "Failed to get a crucial function for the melee HBE unpatcher, therefore it won't work, please contact the retard that made this script"
-            )
-        end
-
-        if (grcFunction) then
-            for i, v in next, getconstants(grcFunction) do
-                if (v == 1.5 or v == 10) then
-                    setconstant(grcFunction, i, numberT)
-                end
-            end
-        else
-            warn(
-                "Failed to get a crucial function for the gun HBE unpatcher, therefore it won't work, please contact the retard that made this script"
-            )
-        end
-
-        local DefHeadSize = game.Players.LocalPlayer.Character:WaitForChild("Head").Size
-
-        local Lighting = game.Lighting
-        local DefaultAmbient = Lighting.Ambient
-
-        local oldIndex
-        oldIndex =
-            hookmetamethod(
-            game,
-            "__index",
-            newcclosure(
-                function(...) -- future proofing
-                    local tab, key = ...
-                    if (tab == nil or type(tab) ~= "userdata" or key == nil) then --incase we want to change the args in the future
-                        return oldIndex(...)
-                    end
-                    if (not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size") then
-                        if (oldIndex(tab, "Name") == "Head") then
-                            return DefHeadSize
-                        end
-                    end
-                    return oldIndex(...)
-                end
-            )
-        )
-
-        local oldNewIndex
-        oldNewIndex =
-            hookmetamethod(
-            game,
-            "__newindex",
-            newcclosure(
-                function(...)
-                    if (not checkcaller()) then
-                        local tab, key, value = ...
-                        if (tab == Lighting and key == "Ambient") then
-                            return oldNewIndex(tab, key, FullBright and _G.FullBrightColor or DefaultAmbient) -- because i remember the retard having that shit be put inside of a frame hook
-                        end
-                    end
-                    return oldNewIndex(...)
-                end
-            )
-        )
 
         local fMain
         local fMainDo
@@ -249,22 +155,6 @@ Assert(Piles, "Unable to find Piles [SpawnedPiles]")
 local PilePickup = ReplicatedStorage.Events.PIC_PU
 local CashPickup = ReplicatedStorage.Events.CZDPZUS
 
-local HeadSize = Vector3.new(1.2, 1, 1)
-local RayCheck
-for i,v in next, getgc(true) do
-    if type(v) == "table" and rawget(v, "ONRH_S4") and type(rawget(v, "ONRH_S4")) == "function" then
-        RayCheck = v
-        break
-    end
-end
-
-Assert(RayCheck, "Unable to find RayCheck")
-
-for i,v in next, getconstants(RayCheck.ONRH_S4) do
-    if v == 10 or v == 1.5 then
-        setconstant(RayCheck.ONRH_S4, i, math.huge)
-    end
-end
 
 local ChatFrame = LocalPlayer.PlayerGui.Chat.Frame
 local function ShowChat(Active)
@@ -361,6 +251,8 @@ do
                 menu.save_cfg(menu.values[5].menu.configs["config name"].Text)
             end
         end)
+        
+
         configs.element("Button", "load", nil, function()
             if menu.values[5].menu.configs["config name"].Text ~= "none" then
                 menu.load_cfg(menu.values[5].menu.configs["config name"].Text)
@@ -669,9 +561,7 @@ do
 
         
 
-        local hbe = misc.new_sector("hitbox expander", "Right")
-        hbe.element("Toggle", "enabled"):add_keybind()
-        hbe.element("Slider", "multiplier", {default = {min = 100, max = 400, default = 400}})
+        
 
 local self = misc.new_sector("self")
         self.element("Toggle", "fov changer"):add_keybind()
@@ -680,6 +570,133 @@ local self = misc.new_sector("self")
         local killaura = misc.new_sector("kill aura", "Right")
         killaura.element("Toggle", "enabled"):add_keybind()
         killaura.element("Slider", "distance", {default = {min = 10, max = 15, default = 15}})
+       
+       character.element("Button", "hitbox expander", nil, function()
+            if menu.values[5].menu.configs["config name"].Text ~= "none" then     local rcFunction
+    for iter = 1, 10 do
+        for i, v in next, getgc(true) do
+            if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
+                rcFunction = v.lol
+                break
+            end
+        end
+        if rcFunction then
+            break
+        end
+        wait(0.1)
+    end
+
+    local grcFunction
+    for iter = 1, 10 do
+        for i, v in next, getgc(true) do
+            if (type(v) == "table" and type(rawget(v, "ONRH_S4")) == "function") then
+                grcFunction = v.ONRH_S4
+                break
+            end
+        end
+        if grcFunction then
+            break
+        end
+        wait(0.1)
+    end
+
+    local numberT = 20
+
+    if (rcFunction) then
+        for i, v in next, getconstants(rcFunction) do
+            if (v == 1.75 or v == 10) then
+                setconstant(rcFunction, i, numberT)
+            end
+        end
+    else
+        warn("Failed to get a crucial function for the melee HBE unpatcher.")
+    end
+
+    if (grcFunction) then
+        for i, v in next, getconstants(grcFunction) do
+            if (v == 1.5 or v == 10) then
+                setconstant(grcFunction, i, numberT)
+            end
+        end
+    else
+        warn("Failed to get a crucial function for the gun HBE unpatcher.")
+    end
+
+    local DefHeadSize = game.Players.LocalPlayer.Character:WaitForChild("Head").Size
+    local Lighting = game.Lighting
+    local DefaultAmbient = Lighting.Ambient
+
+    local oldIndex
+    oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
+        local tab, key = ...
+        if (tab == nil or type(tab) ~= "userdata" or key == nil) then
+            return oldIndex(...)
+        end
+        if (not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size") then
+            if (oldIndex(tab, "Name") == "Head") then
+                return DefHeadSize
+            end
+        end
+        return oldIndex(...)
+    end))
+
+    local oldNewIndex
+    oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
+        if (not checkcaller()) then
+            local tab, key, value = ...
+            if (tab == Lighting and key == "Ambient") then
+                return oldNewIndex(tab, key, FullBright and _G.FullBrightColor or DefaultAmbient)
+            end
+        end
+        return oldNewIndex(...)
+    end))
+while true do
+    local plrs = game:GetService("Players")
+    local me = plrs.LocalPlayer
+    local work = true
+
+    local function modifyHead(character)
+        local head = character:FindFirstChild("Head")
+        if head and work and head.Size ~= Vector3.new(6, 5, 7) then
+            head.Size = Vector3.new(6, 6, 7)
+            head.Transparency = 0.5
+            head.CanCollide = false
+            head.Massless = true
+        end
+    end
+
+    local function onDescendantAdded(descendant)
+        if descendant:IsA("BasePart") and descendant.Name == "Head" then
+            modifyHead(descendant.Parent)
+        end
+    end
+
+    local function onCharacterAdded(character)
+        character.DescendantAdded:Connect(onDescendantAdded)
+        modifyHead(character)
+    end
+
+    for _, player in pairs(plrs:GetPlayers()) do
+        if player ~= me then
+            if player.Character then
+                onCharacterAdded(player.Character)
+            end
+            player.CharacterAdded:Connect(onCharacterAdded)
+        end
+    end
+
+    plrs.PlayerAdded:Connect(function(plradded)
+        if plradded ~= me then
+            plradded.CharacterAdded:Connect(onCharacterAdded)
+        end
+    end)
+
+    wait(1) -- wait to prevent infinite rapid loops
+end
+
+
+            end
+        end)
         
 
         local viewoffset = misc.new_sector("viewmodel offset", "Right")
@@ -946,13 +963,11 @@ RunService.Heartbeat:Connect(function()
         local Head = Character:FindFirstChild("Head")
         if not Head then continue end
 
-        if menu.values[4].misc["hitbox expander"].enabled.Toggle and menu.values[4].misc["hitbox expander"]["$enabled"].Active then
-            Head.Size = HeadSize * menu.values[4].misc["hitbox expander"].multiplier.Slider / 100
-            Head.Transparency = 0.8
-            Head.CanCollide = false
+        if menu.values[4].misc["kill aura"].enabled.Toggle and menu.values[4].misc["kill aura"]["$enabled"].Active then
+    
+
+
         else
-            Head.Size = HeadSize
-            Head.Transparency = 0
         end
     end
 end)
