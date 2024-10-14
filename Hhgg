@@ -1,4 +1,4 @@
-    local rcFunction
+local rcFunction
     for iter = 1, 10 do
         for i, v in next, getgc(true) do
             if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
