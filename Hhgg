@@ -1,0 +1,78 @@
+local rcFunction
+    for iter = 1, 10 do
+        for i, v in next, getgc(true) do
+            if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
+                rcFunction = v.lol
+                break
+            end
+        end
+        if rcFunction then
+            break
+        end
+        wait(0.1)
+    end
+
+    local grcFunction
+    for iter = 1, 10 do
+        for i, v in next, getgc(true) do
+            if (type(v) == "table" and type(rawget(v, "ONRH_S4")) == "function") then
+                grcFunction = v.ONRH_S4
+                break
+            end
+        end
+        if grcFunction then
+            break
+        end
+        wait(0.1)
+    end
+
+    local numberT = 20
+
+    if (rcFunction) then
+        for i, v in next, getconstants(rcFunction) do
+            if (v == 1.75 or v == 10) then
+                setconstant(rcFunction, i, numberT)
+            end
+        end
+    else
+        warn("Failed to get a crucial function for the melee HBE unpatcher.")
+    end
+
+    if (grcFunction) then
+        for i, v in next, getconstants(grcFunction) do
+            if (v == 1.5 or v == 10) then
+                setconstant(grcFunction, i, numberT)
+            end
+        end
+    else
+        warn("Failed to get a crucial function for the gun HBE unpatcher.")
+    end
+
+    local DefHeadSize = game.Players.LocalPlayer.Character:WaitForChild("Head").Size
+    local Lighting = game.Lighting
+    local DefaultAmbient = Lighting.Ambient
+
+    local oldIndex
+    oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
+        local tab, key = ...
+        if (tab == nil or type(tab) ~= "userdata" or key == nil) then
+            return oldIndex(...)
+        end
+        if (not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size") then
+            if (oldIndex(tab, "Name") == "Head") then
+                return DefHeadSize
+            end
+        end
+        return oldIndex(...)
+    end))
+
+    local oldNewIndex
+    oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
+        if (not checkcaller()) then
+            local tab, key, value = ...
+            if (tab == Lighting and key == "Ambient") then
+                return oldNewIndex(tab, key, FullBright and _G.FullBrightColor or DefaultAmbient)
+            end
+        end
+        return oldNewIndex(...)
+    end))
