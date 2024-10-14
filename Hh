@@ -414,6 +414,8 @@ do
         drawings.element("Dropdown", "font", {options = {"Plex", "Monospace", "System", "UI"}})
         drawings.element("Dropdown", "surround", {options = {"none", "[]", "--", "<>"}})
 
+
+
         local world = tabs[3].new_section("world")
 
         local worldesp = world.new_sector("world esp")
@@ -551,6 +553,10 @@ do
     end
     do
         local misc = tabs[4].new_section("misc")
+        
+        local jff = tabs[4].new_section("jff")
+        
+        local jff = jff.new_sector("jff")
 
         local character = misc.new_sector("character")
         character.element("Toggle", "walkspeed"):add_keybind()
@@ -571,132 +577,53 @@ local self = misc.new_sector("self")
         killaura.element("Toggle", "enabled"):add_keybind()
         killaura.element("Slider", "distance", {default = {min = 10, max = 15, default = 15}})
        
-       character.element("Button", "hitbox expander", nil, function()
-            if menu.values[5].menu.configs["config name"].Text ~= "none" then     local rcFunction
-    for iter = 1, 10 do
-        for i, v in next, getgc(true) do
-            if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
-                rcFunction = v.lol
-                break
+character.element("Button", "hitbox expander", nil, function()
+    if menu.values[5].menu.configs["config name"].Text ~= "none" then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/Ieieue/Skgma/refs/heads/main/Hhgg"))()
+        
+        local Players = game:GetService("Players")
+        local LocalPlayer = Players.LocalPlayer
+        local work = true
+        
+        local function modifyHead(character)
+            local head = character:FindFirstChild("Head")
+            if head and work and head.Size ~= Vector3.new(7, 7, 7) then
+                head.Size = Vector3.new(7, 7, 7)
+                head.Transparency = 0.5
+                head.CanCollide = false
+                head.Massless = true
             end
         end
-        if rcFunction then
-            break
-        end
-        wait(0.1)
-    end
-
-    local grcFunction
-    for iter = 1, 10 do
-        for i, v in next, getgc(true) do
-            if (type(v) == "table" and type(rawget(v, "ONRH_S4")) == "function") then
-                grcFunction = v.ONRH_S4
-                break
+        
+        local function onDescendantAdded(descendant)
+            if descendant:IsA("BasePart") and descendant.Name == "Head" then
+                modifyHead(descendant.Parent)
             end
         end
-        if grcFunction then
-            break
+        
+        local function onCharacterAdded(character)
+            character.DescendantAdded:Connect(onDescendantAdded)
+            modifyHead(character)
         end
-        wait(0.1)
-    end
-
-    local numberT = 20
-
-    if (rcFunction) then
-        for i, v in next, getconstants(rcFunction) do
-            if (v == 1.75 or v == 10) then
-                setconstant(rcFunction, i, numberT)
-            end
-        end
-    else
-        warn("Failed to get a crucial function for the melee HBE unpatcher.")
-    end
-
-    if (grcFunction) then
-        for i, v in next, getconstants(grcFunction) do
-            if (v == 1.5 or v == 10) then
-                setconstant(grcFunction, i, numberT)
-            end
-        end
-    else
-        warn("Failed to get a crucial function for the gun HBE unpatcher.")
-    end
-
-    local DefHeadSize = game.Players.LocalPlayer.Character:WaitForChild("Head").Size
-    local Lighting = game.Lighting
-    local DefaultAmbient = Lighting.Ambient
-
-    local oldIndex
-    oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
-        local tab, key = ...
-        if (tab == nil or type(tab) ~= "userdata" or key == nil) then
-            return oldIndex(...)
-        end
-        if (not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size") then
-            if (oldIndex(tab, "Name") == "Head") then
-                return DefHeadSize
-            end
-        end
-        return oldIndex(...)
-    end))
-
-    local oldNewIndex
-    oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
-        if (not checkcaller()) then
-            local tab, key, value = ...
-            if (tab == Lighting and key == "Ambient") then
-                return oldNewIndex(tab, key, FullBright and _G.FullBrightColor or DefaultAmbient)
-            end
-        end
-        return oldNewIndex(...)
-    end))
-while true do
-    local plrs = game:GetService("Players")
-    local me = plrs.LocalPlayer
-    local work = true
-
-    local function modifyHead(character)
-        local head = character:FindFirstChild("Head")
-        if head and work and head.Size ~= Vector3.new(6, 5, 7) then
-            head.Size = Vector3.new(6, 6, 7)
-            head.Transparency = 0.5
-            head.CanCollide = false
-            head.Massless = true
-        end
-    end
-
-    local function onDescendantAdded(descendant)
-        if descendant:IsA("BasePart") and descendant.Name == "Head" then
-            modifyHead(descendant.Parent)
-        end
-    end
-
-    local function onCharacterAdded(character)
-        character.DescendantAdded:Connect(onDescendantAdded)
-        modifyHead(character)
-    end
-
-    for _, player in pairs(plrs:GetPlayers()) do
-        if player ~= me then
-            if player.Character then
+        
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
                 onCharacterAdded(player.Character)
             end
             player.CharacterAdded:Connect(onCharacterAdded)
         end
-    end
-
-    plrs.PlayerAdded:Connect(function(plradded)
-        if plradded ~= me then
-            plradded.CharacterAdded:Connect(onCharacterAdded)
-        end
-    end)
-
-    wait(1) -- wait to prevent infinite rapid loops
-end
-
-
+        
+        Players.PlayerAdded:Connect(function(plradded)
+            if plradded ~= LocalPlayer then
+                plradded.CharacterAdded:Connect(onCharacterAdded)
             end
         end)
+    end
+end)
+
+
+        
+
         
 
         local viewoffset = misc.new_sector("viewmodel offset", "Right")
@@ -706,6 +633,57 @@ end
         viewoffset.element("Slider", "z offset", {default = {min = -10, max = 10, default = 0}})
 
         local other = misc.new_sector("other", "Left")
+        other.element("Button", "wallbang", nil, function()
+    if menu.values[5].menu.configs["config name"].Text ~= "none" then
+        game:GetService("Workspace"):FindFirstChild('Map'):FindFirstChild('Parts'):FindFirstChild('M_Parts').Parent = game:GetService("Workspace"):FindFirstChild('Characters')
+    end
+end)
+other.element("Button", "auto claim allowance", nil, function()
+    if menu.values[5].menu.configs["config name"].Text ~= "none" then
+        local run = game:GetService("RunService")
+
+        AutoClaimAllowanceCoolDown = false
+        AutoClaimAllowanceType = "Near"
+
+        run.RenderStepped:Connect(function()
+            local player = game:GetService("Players").LocalPlayer
+            local nextAllowance = game:GetService("ReplicatedStorage").PlayerbaseData2[player.Name].NextAllowance.Value
+
+            if nextAllowance == 0 then
+                local function GetATM(maxDistance)
+                    local closestATM
+                    local closestDistance = maxDistance
+
+                    for _, atm in ipairs(game:GetService("Workspace").Map.ATMz:GetChildren()) do
+                        local mainPart = atm:FindFirstChild("MainPart")
+                        if mainPart then
+                            local distance = (player.Character.HumanoidRootPart.Position - mainPart.Position).Magnitude
+                            if distance < closestDistance then
+                                closestDistance = distance
+                                closestATM = mainPart
+                            end
+                        end
+                    end
+
+                    return closestATM
+                end
+
+                if AutoClaimAllowanceType == "Near" and not AutoClaimAllowanceCoolDown then
+                    local ATM = GetATM(math.huge)
+                    if ATM then
+                        AutoClaimAllowanceCoolDown = true
+                        coroutine.resume(coroutine.create(function()
+                            game:GetService("ReplicatedStorage").Events.CLMZALOW:InvokeServer(ATM)
+                        end))
+                        wait(0.5)
+                        AutoClaimAllowanceCoolDown = false
+                    end
+                end
+            end
+        end)
+    end
+end)
+
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
         other.element("Toggle", "extended zoom", nil, function(State)
@@ -716,19 +694,14 @@ end
             end
         end)
 
-other.element("Toggle", "wallbang", nil, function(State)
-            if (State.Toggle) then
-                game:service[[Workspace]]:FindFirstChild('Map'):FindFirstChild('Parts'):FindFirstChild('M_Parts').Parent = game:service[[Workspace]]:FindFirstChild('Characters')
 
-            end
-        end)
         other.element("Toggle", "no jump cooldown")
         
-        other.element("Toggle", "Spinbot")
+        
         
         other.element("Toggle", "Allowance Autofarm")
         
-        other.element("Toggle", "Auto claim allowance")
+        
         
 
         
@@ -1219,60 +1192,14 @@ while wait(60) do
 end
     end
     
-if menu.values[4].misc["other"]["Auto claim allowance"].Toggle then local run = game:GetService("RunService")
 
-AutoClaimAllowanceCoolDown = false
-AutoClaimAllowanceType = "Near"
-
-run.RenderStepped:Connect(function()
-	if game:GetService("ReplicatedStorage").PlayerbaseData2[game:GetService("Players").LocalPlayer.Name].NextAllowance.Value == 0 then
-		local function GetATM(Studs)
-			local Part;
-			for _, v in ipairs(game:GetService("Workspace").Map.ATMz:GetChildren()) do
-				if v:FindFirstChild("MainPart") then
-					local Distance = (game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position - v:FindFirstChild("MainPart").Position).Magnitude
-					if Distance < Studs then
-						Studs = Distance
-						Part = v:FindFirstChild("MainPart")
-					end
-				end
-			end
-			return Part
-		end
-
-		if AutoClaimAllowanceType == "Near" then
-			local ATM = GetATM(math.huge)
-			if ATM and not AutoClaimAllowanceCoolDown then
-				AutoClaimAllowanceCoolDown = true
-				coroutine.resume(coroutine.create(function()
-				game:GetService("ReplicatedStorage").Events.CLMZALOW:InvokeServer(ATM)
-				end))
-				wait(0.5)
-				AutoClaimAllowanceCoolDown = false
-			end
-		end
-	end
-end)
-
-    end
+    
     
     if menu.values[4].misc["other"]["no jump cooldown"].Toggle then
         SelfHumanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
     end
     
-    if menu.values[4].misc["other"]["Spinbot"].Toggle then local speed = 50
-
-local plr = game:GetService("Players").LocalPlayer
-repeat task.wait() until plr.Character
-local humRoot = plr.Character:WaitForChild("HumanoidRootPart")
-plr.Character:WaitForChild("Humanoid").AutoRotate = false
-local velocity = Instance.new("AngularVelocity")
-velocity.Attachment0 = humRoot:WaitForChild("RootAttachment")
-velocity.MaxTorque = math.huge
-velocity.AngularVelocity = Vector3.new(0, speed, 0)
-velocity.Parent = humRoot
-velocity.Name = "Spinbot"
-    end
+    
 
     local Stats = GetCharStats()
     if Stats then
