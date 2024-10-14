@@ -578,48 +578,11 @@ local self = misc.new_sector("self")
         killaura.element("Slider", "distance", {default = {min = 10, max = 15, default = 15}})
        
 character.element("Button", "hitbox expander", nil, function()
-    if menu.values[5].menu.configs["config name"].Text ~= "none" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Ieieue/Skgma/refs/heads/main/Hhgg"))()
-        
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local work = true
-        
-        local function modifyHead(character)
-            local head = character:FindFirstChild("Head")
-            if head and work and head.Size ~= Vector3.new(7, 7, 7) then
-                head.Size = Vector3.new(7, 7, 7)
-                head.Transparency = 0.5
-                head.CanCollide = false
-                head.Massless = true
-            end
-        end
-        
-        local function onDescendantAdded(descendant)
-            if descendant:IsA("BasePart") and descendant.Name == "Head" then
-                modifyHead(descendant.Parent)
-            end
-        end
-        
-        local function onCharacterAdded(character)
-            character.DescendantAdded:Connect(onDescendantAdded)
-            modifyHead(character)
-        end
-        
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character then
-                onCharacterAdded(player.Character)
-            end
-            player.CharacterAdded:Connect(onCharacterAdded)
-        end
-        
-        Players.PlayerAdded:Connect(function(plradded)
-            if plradded ~= LocalPlayer then
-                plradded.CharacterAdded:Connect(onCharacterAdded)
-            end
-        end)
+    if menu.values[5].menu.configs["config name"].Text ~= "none" then loadstring(game:HttpGet("https://raw.githubusercontent.com/Vuubvyc/UNDETECTEDWAREEE/refs/heads/main/Hitbox"))();
+        -- Add your code here to execute when the condition is met
     end
 end)
+
 
 
         
