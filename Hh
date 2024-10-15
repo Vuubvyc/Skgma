@@ -632,6 +632,10 @@ end)
         other.element("Toggle", "show chat", nil, ShowChat)
         other.element("Toggle", "lockpick hbe")
         
+        other.element("Toggle", "infinite pepper spray")
+        
+        other.element("Toggle", "fast pick up")
+        
         
         
         other.element("Toggle", "allowance")
@@ -714,6 +718,78 @@ end)
             end
         end)
 
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer -- Get the local player
+
+-- Define a normal ammo value to reset to
+local normalAmmoValue = 100 -- Set this to the default ammo value
+
+task.spawn(function() 
+    local InfPepperConnection = RunService.PreRender:Connect(function()
+        local Character = Player.Character -- Use Player.Character to reference the character
+
+        if Character then
+            local Pepperspray = Character:FindFirstChild("Pepper-spray")
+
+            if Pepperspray then
+                local Ammo = Pepperspray:FindFirstChild("Ammo")
+
+                if Ammo then
+                    if menu.values[4].misc["other"]["infinite pepper spray"].Toggle then
+                        -- Set infinite ammo values
+                        Ammo.MaxValue = math.huge
+                        Ammo.MinValue = math.huge
+                        Ammo.Value = math.huge
+                    else
+                        -- Reset ammo to a normal value
+                        Ammo.MaxValue = normalAmmoValue
+                        Ammo.MinValue = normalAmmoValue
+                        Ammo.Value = normalAmmoValue
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+
+local RunService = game:GetService("RunService")  -- Ensure RunService is correctly initialized
+local proximityPrompts = {}
+
+-- Function to handle adding prompts
+workspace.DescendantAdded:Connect(function(item)
+    if item:IsA("ProximityPrompt") then
+        proximityPrompts[item] = {
+            originalDuration = item.HoldDuration
+        }
+
+        -- Optional: Handle removal of the prompt from the table when it's removed
+        item.AncestryChanged:Connect(function(_, parent)
+            if not parent then
+                proximityPrompts[item] = nil
+            end
+        end)
+    end
+end)
+
+-- Function to check the toggle state
+local function isFastPickUpEnabled()
+    return menu.values[4].misc["other"]["fast pick up"].Toggle
+end
+
+-- RenderStepped loop to update all proximity prompts based on toggle
+RunService.RenderStepped:Connect(function()
+    for prompt, _ in pairs(proximityPrompts) do
+        if prompt and prompt:IsA("ProximityPrompt") then  -- Check if prompt is still valid
+            if isFastPickUpEnabled() then
+                prompt.HoldDuration = 0  -- Disable hold duration if fast pick-up is enabled
+            else
+                prompt.HoldDuration = prompt.originalDuration  -- Restore original duration if toggled off
+            end
+        end
+    end
+end)
 
 
 local fov = 130
