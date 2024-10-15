@@ -562,8 +562,6 @@ do
         character.element("Toggle", "walkspeed"):add_keybind()
         character.element("Slider", "speed", {default = {min = 20, max = 35, default = 35}})
         
-        character.element("Toggle", "spinbot"):add_keybind()
-        character.element("Slider", "speed", {default = {min = 20, max = 35, default = 35}})
         character.element("Toggle", "noclip"):add_keybind()
         character.element("Toggle", "infinite stamina"):add_keybind()
         character.element("Combo", "disablers", {options = {"fall damage", "down", "ragdoll", "zawarudo", "jailed", "handcuffed"}})
@@ -649,7 +647,50 @@ end)
         other.element("Toggle", "Allowance Autofarm")
         
         
-        
+        local run = game:GetService("RunService")
+
+local AutoClaimAllowanceCoolDown = false
+local AutoClaimAllowanceType = "Near"
+
+-- Function to get the nearest ATM
+local function GetATM(Studs)
+	local Part = nil
+	local closestDistance = Studs
+	for _, v in ipairs(game:GetService("Workspace").Map.ATMz:GetChildren()) do
+		if v:FindFirstChild("MainPart") then
+			local Distance = (game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position - v.MainPart.Position).Magnitude
+			if Distance < closestDistance then
+				closestDistance = Distance
+				Part = v.MainPart
+			end
+		end
+	end
+	return Part
+end
+
+-- Optimized check on Heartbeat to reduce load
+run.Heartbeat:Connect(function()
+	-- Check if the allowance system is toggled on
+	if menu.values[4].misc["other"]["allowance"].Toggle then
+		-- Check if the player is eligible to claim allowance
+		if game:GetService("ReplicatedStorage").PlayerbaseData2[game:GetService("Players").LocalPlayer.Name].NextAllowance.Value == 0 then
+			-- Only try to claim if not in cooldown
+			if AutoClaimAllowanceType == "Near" and not AutoClaimAllowanceCoolDown then
+				local ATM = GetATM(math.huge) -- Find the closest ATM
+				if ATM then
+					AutoClaimAllowanceCoolDown = true
+					
+					-- Claim the allowance using a coroutine to prevent delays
+					coroutine.wrap(function()
+						game:GetService("ReplicatedStorage").Events.CLMZALOW:InvokeServer(ATM)
+						wait(0.5) -- Cooldown to prevent spam
+						AutoClaimAllowanceCoolDown = false
+					end)()
+				end
+			end
+		end
+	end
+end)
 
         
 
@@ -1040,26 +1081,7 @@ RunService.RenderStepped:Connect(function()
         Camera.FieldOfView = FOV
     end
     
--- LocalScript to create a spinbot effect with a toggle
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-local spinSpeed = 100 -- Adjust the spin speed here
 
--- Function to handle spinning
-local function spin()
-    while true do
-        -- Check if the walk speed toggle is active
-        if menu.values[4].misc.character.spinbot.Toggle and menu.values[4].misc.character["$spinbot"].Active then
-            -- Create a rotation
-            humanoidRootPart.CFrame = humanoidRootPart.CFrame * CFrame.Angles(0, math.rad(spinSpeed), 0)
-        end
-        wait(0.03) -- Adjust the wait time for smoother or faster spinning
-    end
-end
-
--- Start spinning in a separate coroutine
-coroutine.wrap(spin)()
 
     
     if menu.values[4].misc["other"]["Allowance Autofarm"].Toggle then local Players = game:GetService("Players")
@@ -1169,44 +1191,8 @@ end
     end
     
     
-local run = game:GetService("RunService")
 
-AutoClaimAllowanceCoolDown = false
-AutoClaimAllowanceType = "Near"
-
-run.RenderStepped:Connect(function()
-    -- Check if the spin toggle and active state are true
-    if menu.values[4].misc.character.spinbot.Toggle and menu.values[4].misc.character["$spinbot"].Active then
-        if game:GetService("ReplicatedStorage").PlayerbaseData2[game:GetService("Players").LocalPlayer.Name].NextAllowance.Value == 0 then
             
-            local function GetATM(Studs)
-                local Part
-                for _, v in ipairs(game:GetService("Workspace").Map.ATMz:GetChildren()) do
-                    if v:FindFirstChild("MainPart") then
-                        local Distance = (game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position - v:FindFirstChild("MainPart").Position).Magnitude
-                        if Distance < Studs then
-                            Studs = Distance
-                            Part = v:FindFirstChild("MainPart")
-                        end
-                    end
-                end
-                return Part
-            end
-
-            if AutoClaimAllowanceType == "Near" then
-                local ATM = GetATM(math.huge)
-                if ATM and not AutoClaimAllowanceCoolDown then
-                    AutoClaimAllowanceCoolDown = true
-                    coroutine.resume(coroutine.create(function()
-                        game:GetService("ReplicatedStorage").Events.CLMZALOW:InvokeServer(ATM)
-                    end))
-                    wait(0.5)
-                    AutoClaimAllowanceCoolDown = false
-                end
-            end
-        end
-    end
-end)
 
     
 
