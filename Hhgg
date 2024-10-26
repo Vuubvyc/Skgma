@@ -1,78 +1,79 @@
-local rcFunction
-    for iter = 1, 10 do
-        for i, v in next, getgc(true) do
-            if (type(v) == "table" and type(rawget(v, "lol")) == "function" and getinfo(v.lol).source:find(".RCHB")) then
-                rcFunction = v.lol
+-- Function to retrieve the desired function from the global context
+local function getFunctionByName(functionName, sourceSubstring, maxAttempts)
+    local foundFunction
+    for iter = 1, maxAttempts do
+        for _, v in next, getgc(true) do
+            if (type(v) == "table" and type(rawget(v, functionName)) == "function" and getinfo(rawget(v, functionName)).source:find(sourceSubstring)) then
+                foundFunction = rawget(v, functionName)
                 break
             end
         end
-        if rcFunction then
+        if foundFunction then
             break
         end
         wait(0.1)
     end
+    return foundFunction
+end
 
-    local grcFunction
-    for iter = 1, 10 do
-        for i, v in next, getgc(true) do
-            if (type(v) == "table" and type(rawget(v, "ONRH_S4")) == "function") then
-                grcFunction = v.ONRH_S4
-                break
-            end
+-- Retrieve rcFunction and grcFunction
+local rcFunction = getFunctionByName("lol", ".RCHB", 10)
+local grcFunction = getFunctionByName("ONRH_S4", "", 10)
+
+-- Set new constant value if the functions were found
+local numberT = 20
+
+if rcFunction then
+    for i, v in next, getconstants(rcFunction) do
+        if v == 1.75 or v == 10 then
+            setconstant(rcFunction, i, numberT)
         end
-        if grcFunction then
-            break
-        end
-        wait(0.1)
     end
+else
+    warn("Failed to get a crucial function for the melee HBE unpatcher.")
+end
 
-    local numberT = 20
-
-    if (rcFunction) then
-        for i, v in next, getconstants(rcFunction) do
-            if (v == 1.75 or v == 10) then
-                setconstant(rcFunction, i, numberT)
-            end
+if grcFunction then
+    for i, v in next, getconstants(grcFunction) do
+        if v == 1.5 or v == 10 then
+            setconstant(grcFunction, i, numberT)
         end
-    else
-        warn("Failed to get a crucial function for the melee HBE unpatcher.")
     end
+else
+    warn("Failed to get a crucial function for the gun HBE unpatcher.")
+end
 
-    if (grcFunction) then
-        for i, v in next, getconstants(grcFunction) do
-            if (v == 1.5 or v == 10) then
-                setconstant(grcFunction, i, numberT)
-            end
-        end
-    else
-        warn("Failed to get a crucial function for the gun HBE unpatcher.")
-    end
+-- Store default head size and ambient lighting
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local DefHeadSize = character:WaitForChild("Head").Size
+local Lighting = game.Lighting
+local DefaultAmbient = Lighting.Ambient
 
-    local DefHeadSize = game.Players.LocalPlayer.Character:WaitForChild("Head").Size
-    local Lighting = game.Lighting
-    local DefaultAmbient = Lighting.Ambient
-
-    local oldIndex
-    oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
-        local tab, key = ...
-        if (tab == nil or type(tab) ~= "userdata" or key == nil) then
-            return oldIndex(...)
-        end
-        if (not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size") then
-            if (oldIndex(tab, "Name") == "Head") then
-                return DefHeadSize
-            end
-        end
+-- Hook __index metamethod to adjust the Head size
+local oldIndex
+oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
+    local tab, key = ...
+    if not tab or type(tab) ~= "userdata" or not key then
         return oldIndex(...)
-    end))
+    end
 
-    local oldNewIndex
-    oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
-        if (not checkcaller()) then
-            local tab, key, value = ...
-            if (tab == Lighting and key == "Ambient") then
-                return oldNewIndex(tab, key, FullBright and _G.FullBrightColor or DefaultAmbient)
-            end
+    if not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size" then
+        if oldIndex(tab, "Name") == "Head" then
+            return DefHeadSize
         end
-        return oldNewIndex(...)
-    end))
+    end
+    return oldIndex(...)
+end))
+
+-- Hook __newindex metamethod to adjust the Ambient lighting
+local oldNewIndex
+oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
+    if not checkcaller() then
+        local tab, key, value = ...
+        if tab == Lighting and key == "Ambient" then
+            return oldNewIndex(tab, key, _G.FullBright and _G.FullBrightColor or DefaultAmbient)
+        end
+    end
+    return oldNewIndex(...)
+end))
