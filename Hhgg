@@ -16,64 +16,102 @@ local function getFunctionByName(functionName, sourceSubstring, maxAttempts)
     return foundFunction
 end
 
--- Retrieve rcFunction and grcFunction
-local rcFunction = getFunctionByName("lol", ".RCHB", 10)
-local grcFunction = getFunctionByName("ONRH_S4", "", 10)
+-- Function to set up the melee and gun unpatchers
+local function setupUnpatchers()
+    -- Retrieve rcFunction and grcFunction
+    local rcFunction = getFunctionByName("lol", ".RCHB", 10)
+    local grcFunction = getFunctionByName("ONRH_S4", "", 10)
 
--- Set new constant value if the functions were found
-local numberT = 20
+    -- Set new constant value if the functions were found
+    local numberT = 20
 
-if rcFunction then
-    for i, v in next, getconstants(rcFunction) do
-        if v == 1.75 or v == 10 then
-            setconstant(rcFunction, i, numberT)
+    if rcFunction then
+        for i, v in next, getconstants(rcFunction) do
+            if v == 1.75 or v == 10 then
+                setconstant(rcFunction, i, numberT)
+            end
         end
+    else
+        warn("Failed to get a crucial function for the melee HBE unpatcher.")
     end
-else
-    warn("Failed to get a crucial function for the melee HBE unpatcher.")
+
+    if grcFunction then
+        for i, v in next, getconstants(grcFunction) do
+            if v == 1.5 or v == 10 then
+                setconstant(grcFunction, i, numberT)
+            end
+        end
+    else
+        warn("Failed to get a crucial function for the gun HBE unpatcher.")
+    end
 end
 
-if grcFunction then
-    for i, v in next, getconstants(grcFunction) do
-        if v == 1.5 or v == 10 then
-            setconstant(grcFunction, i, numberT)
+-- Function to hook the size of the player's head and prevent flying
+local function hookPlayer(character)
+    local DefHeadSize = character:WaitForChild("Head").Size
+    local oldIndex
+    local oldSetPosition
+
+    -- Hook __index metamethod to adjust the Head size
+    oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
+        local tab, key = ...
+        if not tab or type(tab) ~= "userdata" or not key then
+            return oldIndex(...)
         end
-    end
-else
-    warn("Failed to get a crucial function for the gun HBE unpatcher.")
-end
 
--- Store default head size and ambient lighting
-local player = game.Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local DefHeadSize = character:WaitForChild("Head").Size
-local Lighting = game.Lighting
-local DefaultAmbient = Lighting.Ambient
-
--- Hook __index metamethod to adjust the Head size
-local oldIndex
-oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
-    local tab, key = ...
-    if not tab or type(tab) ~= "userdata" or not key then
+        if not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size" then
+            if oldIndex(tab, "Name") == "Head" then
+                return DefHeadSize
+            end
+        end
         return oldIndex(...)
-    end
+    end))
 
-    if not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size" then
-        if oldIndex(tab, "Name") == "Head" then
-            return DefHeadSize
+    -- Hook to prevent flying by controlling position
+    oldSetPosition = character.HumanoidRootPart.SetPosition
+    character.HumanoidRootPart.SetPosition = newcclosure(function(self, pos)
+        local humanoid = self.Parent:FindFirstChildOfClass("Humanoid")
+        if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+            return -- Prevent changing position if the player is in freefall
         end
-    end
-    return oldIndex(...)
-end))
+        return oldSetPosition(self, pos) -- Call original SetPosition
+    end)
+end
 
--- Hook __newindex metamethod to adjust the Ambient lighting
-local oldNewIndex
-oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
-    if not checkcaller() then
-        local tab, key, value = ...
-        if tab == Lighting and key == "Ambient" then
-            return oldNewIndex(tab, key, _G.FullBright and _G.FullBrightColor or DefaultAmbient)
+-- Function to hook the ambient lighting
+local function hookAmbientLighting()
+    local Lighting = game.Lighting
+    local DefaultAmbient = Lighting.Ambient
+    local oldNewIndex
+    oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
+        if not checkcaller() then
+            local tab, key, value = ...
+            if tab == Lighting and key == "Ambient" then
+                return oldNewIndex(tab, key, _G.FullBright and _G.FullBrightColor or DefaultAmbient)
+            end
         end
+        return oldNewIndex(...)
+    end))
+end
+
+-- Function to handle player character
+local function onCharacterAdded(character)
+    setupUnpatchers()
+    hookPlayer(character)
+end
+
+-- Main setup function for new players
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(onCharacterAdded)
+    if player.Character then
+        onCharacterAdded(player.Character) -- Handle case if the character is already loaded
     end
-    return oldNewIndex(...)
-end))
+end
+
+-- Set up for existing players
+for _, player in ipairs(game.Players:GetPlayers()) do
+    onPlayerAdded(player)
+end
+
+-- Connect the PlayerAdded event
+game.Players.PlayerAdded:Connect(onPlayerAdded)
