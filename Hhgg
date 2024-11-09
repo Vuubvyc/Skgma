@@ -1,34 +1,34 @@
--- Function to retrieve the desired function from the global context
+-- Function to retrieve the desired function from the global context with added support for weaker exploits
 local function getFunctionByName(functionName, sourceSubstring, maxAttempts)
     local foundFunction
     for iter = 1, maxAttempts do
         for _, v in next, getgc(true) do
-            if (type(v) == "table" and type(rawget(v, functionName)) == "function" and getinfo(rawget(v, functionName)).source:find(sourceSubstring)) then
-                foundFunction = rawget(v, functionName)
-                break
+            if (type(v) == "table" and type(rawget(v, functionName)) == "function") then
+                local info = getinfo(rawget(v, functionName))
+                if info and info.source:find(sourceSubstring) then
+                    foundFunction = rawget(v, functionName)
+                    break
+                end
             end
         end
         if foundFunction then
             break
         end
-        wait(0.1)
+        wait(0.1) -- Delay to allow weaker exploits to find the function
     end
-    return foundFunction
+    return foundFunction or warn("Failed to retrieve function:", functionName)
 end
 
--- Function to set up the melee and gun unpatchers
+-- Function to set up melee and gun unpatchers with compatibility improvements
 local function setupUnpatchers()
-    -- Retrieve rcFunction and grcFunction
     local rcFunction = getFunctionByName("lol", ".RCHB", 10)
     local grcFunction = getFunctionByName("ONRH_S4", "", 10)
-
-    -- Set new constant value if the functions were found
     local numberT = 20
 
     if rcFunction then
         for i, v in next, getconstants(rcFunction) do
             if v == 1.75 or v == 10 then
-                setconstant(rcFunction, i, numberT)
+                pcall(setconstant, rcFunction, i, numberT) -- Use pcall to handle errors on weaker exploits
             end
         end
     else
@@ -38,7 +38,7 @@ local function setupUnpatchers()
     if grcFunction then
         for i, v in next, getconstants(grcFunction) do
             if v == 1.5 or v == 10 then
-                setconstant(grcFunction, i, numberT)
+                pcall(setconstant, grcFunction, i, numberT)
             end
         end
     else
@@ -46,55 +46,68 @@ local function setupUnpatchers()
     end
 end
 
--- Function to hook the size of the player's head and prevent flying
+-- Function to hook the size of the player's head and prevent flying with fallback for weaker exploits
 local function hookPlayer(character)
     local DefHeadSize = character:WaitForChild("Head").Size
-    local oldIndex
-    local oldSetPosition
+    local oldIndex, oldSetPosition
 
-    -- Hook __index metamethod to adjust the Head size
-    oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
-        local tab, key = ...
-        if not tab or type(tab) ~= "userdata" or not key then
-            return oldIndex(...)
-        end
-
-        if not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size" then
-            if oldIndex(tab, "Name") == "Head" then
-                return DefHeadSize
+    -- Attempt to hook __index metamethod
+    if hookmetamethod then
+        oldIndex = hookmetamethod(game, "__index", newcclosure(function(...)
+            local tab, key = ...
+            if not tab or type(tab) ~= "userdata" or not key then
+                return oldIndex(...)
             end
-        end
-        return oldIndex(...)
-    end))
 
-    -- Hook to prevent flying by controlling position
-    oldSetPosition = character.HumanoidRootPart.SetPosition
-    character.HumanoidRootPart.SetPosition = newcclosure(function(self, pos)
-        local humanoid = self.Parent:FindFirstChildOfClass("Humanoid")
-        if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-            return -- Prevent changing position if the player is in freefall
-        end
-        return oldSetPosition(self, pos) -- Call original SetPosition
-    end)
+            if not checkcaller() and oldIndex(tab, "ClassName") == "Part" and key == "Size" then
+                if oldIndex(tab, "Name") == "Head" then
+                    return DefHeadSize
+                end
+            end
+            return oldIndex(...)
+        end))
+    else
+        warn("hookmetamethod is not available on this exploit.")
+    end
+
+    -- Attempt to hook SetPosition to prevent flying
+    if character.HumanoidRootPart and character.HumanoidRootPart.SetPosition then
+        oldSetPosition = character.HumanoidRootPart.SetPosition
+        character.HumanoidRootPart.SetPosition = newcclosure(function(self, pos)
+            local humanoid = self.Parent:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+                return -- Prevent changing position if the player is in freefall
+            end
+            return oldSetPosition(self, pos)
+        end)
+    else
+        warn("SetPosition hook is not supported on this exploit.")
+    end
 end
 
--- Function to hook the ambient lighting
+-- Function to hook the ambient lighting with support for FullBright
 local function hookAmbientLighting()
     local Lighting = game.Lighting
     local DefaultAmbient = Lighting.Ambient
     local oldNewIndex
-    oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
-        if not checkcaller() then
-            local tab, key, value = ...
-            if tab == Lighting and key == "Ambient" then
-                return oldNewIndex(tab, key, _G.FullBright and _G.FullBrightColor or DefaultAmbient)
+
+    -- Attempt to hook __newindex metamethod
+    if hookmetamethod then
+        oldNewIndex = hookmetamethod(game, "__newindex", newcclosure(function(...)
+            if not checkcaller() then
+                local tab, key, value = ...
+                if tab == Lighting and key == "Ambient" then
+                    return oldNewIndex(tab, key, _G.FullBright and _G.FullBrightColor or DefaultAmbient)
+                end
             end
-        end
-        return oldNewIndex(...)
-    end))
+            return oldNewIndex(...)
+        end))
+    else
+        warn("hookmetamethod is not available for Ambient lighting hook.")
+    end
 end
 
--- Function to handle player character
+-- Function to handle player character setup
 local function onCharacterAdded(character)
     setupUnpatchers()
     hookPlayer(character)
@@ -115,3 +128,6 @@ end
 
 -- Connect the PlayerAdded event
 game.Players.PlayerAdded:Connect(onPlayerAdded)
+
+-- Initialize ambient lighting hook
+hookAmbientLighting()
